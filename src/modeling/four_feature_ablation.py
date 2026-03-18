@@ -15,7 +15,7 @@ import json
 import csv
 import numpy as np
 from scipy.special import erfc
-from sklearn.model_selection import GroupKFold
+from sklearn.model_selection import GroupKFold, KFold
 from sklearn.metrics import r2_score, mean_squared_error
 from sklearn.linear_model import LinearRegression
 from sklearn.tree import DecisionTreeRegressor
@@ -136,6 +136,39 @@ def run_cv(X, y, groups, label):
     return results
 
 
+def run_naive_cv(X, y, label):
+    """Run naive KFold(5, shuffle=True) and return per-model R² results."""
+    kf = KFold(n_splits=5, shuffle=True, random_state=42)
+
+    models = {
+        'xgboost': lambda: xgb.XGBRegressor(**XGB_PARAMS),
+        'cart_d6': lambda: DecisionTreeRegressor(max_depth=6, random_state=42),
+        'cart_d3': lambda: DecisionTreeRegressor(max_depth=3, random_state=42),
+        'linreg': lambda: LinearRegression(),
+    }
+
+    results = {}
+    for name, model_fn in models.items():
+        fold_r2 = []
+        fold_rmse = []
+        for train_idx, test_idx in kf.split(X, y):
+            model = model_fn()
+            model.fit(X[train_idx], y[train_idx])
+            pred = np.clip(model.predict(X[test_idx]), 0, 1)
+            fold_r2.append(float(r2_score(y[test_idx], pred)))
+            fold_rmse.append(float(np.sqrt(mean_squared_error(y[test_idx], pred))))
+
+        results[name] = {
+            'r2_mean': round(float(np.mean(fold_r2)), 4),
+            'r2_std': round(float(np.std(fold_r2)), 4),
+            'rmse_mean': round(float(np.mean(fold_rmse)), 4),
+            'per_fold_r2': [round(v, 4) for v in fold_r2],
+        }
+        print(f"    {name:10s}: R²={results[name]['r2_mean']:.4f} ± {results[name]['r2_std']:.4f}")
+
+    return results
+
+
 def main():
     print("=" * 60)
     print("FOUR-FEATURE SIMULATION ABLATION")
@@ -147,11 +180,31 @@ def main():
 
     X_full, X_4feat, y, groups = load_data()
 
-    print(f"\n--- 8-feature simulation (original) ---")
+    print(f"\n--- 8-feature simulation (GroupKFold) ---")
     results_8feat = run_cv(X_full, y, groups, "8-feature")
 
-    print(f"\n--- 4-feature simulation (testbed-matched) ---")
+    print(f"\n--- 4-feature simulation (GroupKFold) ---")
     results_4feat = run_cv(X_4feat, y, groups, "4-feature")
+
+    print(f"\n--- 8-feature simulation (naive KFold) ---")
+    results_8feat_naive = run_naive_cv(X_full, y, "8-feature-naive")
+
+    print(f"\n--- 4-feature simulation (naive KFold) ---")
+    results_4feat_naive = run_naive_cv(X_4feat, y, "4-feature-naive")
+
+    # Compute leakage delta for both feature sets
+    print("\n" + "=" * 60)
+    print("SPATIAL LEAKAGE ISOLATION: Naive vs GroupKFold")
+    print("=" * 60)
+    print(f"  {'Model':10s}  {'8f Naive':>8s}  {'8f Group':>8s}  {'D_8f':>6s}  {'4f Naive':>8s}  {'4f Group':>8s}  {'D_4f':>6s}")
+    for name in results_8feat:
+        n8 = results_8feat_naive[name]['r2_mean']
+        g8 = results_8feat[name]['r2_mean']
+        d8 = n8 - g8
+        n4 = results_4feat_naive[name]['r2_mean']
+        g4 = results_4feat[name]['r2_mean']
+        d4 = n4 - g4
+        print(f"  {name:10s}  {n8:+8.4f}  {g8:+8.4f}  {d8:+6.3f}  {n4:+8.4f}  {g4:+8.4f}  {d4:+6.3f}")
 
     # Compute gap reduction
     print("\n" + "=" * 60)
@@ -169,13 +222,18 @@ def main():
         'description': (
             'Four-feature simulation ablation: comparison of 8-feature '
             '(original) vs 4-feature (testbed-matched: Distance, RSSI, '
-            'Density, synthetic LQI proxy) simulation R² under GroupKFold(5).'
+            'Density, synthetic LQI proxy) simulation R² under both '
+            'GroupKFold(5) and naive KFold(5, shuffle=True). The naive vs '
+            'grouped delta isolates spatial leakage independent of feature '
+            'starvation.'
         ),
         'full_features': FULL_FEATURES,
         'matched_features': MATCHED_FEATURES + ['LQI_proxy'],
         'n_samples': int(len(y)),
         'results_8feat': results_8feat,
         'results_4feat': results_4feat,
+        'results_8feat_naive': results_8feat_naive,
+        'results_4feat_naive': results_4feat_naive,
     }
 
     out_path = os.path.join(PROCESSED_DIR, 'four_feature_ablation.json')

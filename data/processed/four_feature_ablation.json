@@ -1,5 +1,5 @@
 {
-  "description": "Four-feature simulation ablation: comparison of 8-feature (original) vs 4-feature (testbed-matched: Distance, RSSI, Density, synthetic LQI proxy) simulation R\u00b2 under GroupKFold(5).",
+  "description": "Four-feature simulation ablation: comparison of 8-feature (original) vs 4-feature (testbed-matched: Distance, RSSI, Density, synthetic LQI proxy) simulation R\u00b2 under both GroupKFold(5) and naive KFold(5, shuffle=True). The naive vs grouped delta isolates spatial leakage independent of feature starvation.",
   "full_features": [
     "Transmission_Power_dBm",
     "Distance_to_Sink_m",
@@ -114,6 +114,106 @@
         0.2061,
         0.1855,
         0.1476
+      ]
+    }
+  },
+  "results_8feat_naive": {
+    "xgboost": {
+      "r2_mean": 0.8091,
+      "r2_std": 0.0025,
+      "rmse_mean": 0.017,
+      "per_fold_r2": [
+        0.8128,
+        0.808,
+        0.8108,
+        0.8083,
+        0.8054
+      ]
+    },
+    "cart_d6": {
+      "r2_mean": 0.7778,
+      "r2_std": 0.0029,
+      "rmse_mean": 0.0184,
+      "per_fold_r2": [
+        0.7755,
+        0.7787,
+        0.7738,
+        0.7821,
+        0.779
+      ]
+    },
+    "cart_d3": {
+      "r2_mean": 0.54,
+      "r2_std": 0.0073,
+      "rmse_mean": 0.0264,
+      "per_fold_r2": [
+        0.5378,
+        0.5526,
+        0.535,
+        0.5317,
+        0.5429
+      ]
+    },
+    "linreg": {
+      "r2_mean": 0.2229,
+      "r2_std": 0.0028,
+      "rmse_mean": 0.0344,
+      "per_fold_r2": [
+        0.2244,
+        0.2243,
+        0.2176,
+        0.2225,
+        0.2257
+      ]
+    }
+  },
+  "results_4feat_naive": {
+    "xgboost": {
+      "r2_mean": 0.5537,
+      "r2_std": 0.0113,
+      "rmse_mean": 0.026,
+      "per_fold_r2": [
+        0.5601,
+        0.5583,
+        0.5363,
+        0.5456,
+        0.5681
+      ]
+    },
+    "cart_d6": {
+      "r2_mean": 0.4928,
+      "r2_std": 0.0142,
+      "rmse_mean": 0.0278,
+      "per_fold_r2": [
+        0.4969,
+        0.5024,
+        0.4763,
+        0.4763,
+        0.5119
+      ]
+    },
+    "cart_d3": {
+      "r2_mean": 0.3544,
+      "r2_std": 0.0098,
+      "rmse_mean": 0.0313,
+      "per_fold_r2": [
+        0.3577,
+        0.3655,
+        0.3366,
+        0.3528,
+        0.3594
+      ]
+    },
+    "linreg": {
+      "r2_mean": 0.1967,
+      "r2_std": 0.0028,
+      "rmse_mean": 0.0349,
+      "per_fold_r2": [
+        0.198,
+        0.1973,
+        0.1914,
+        0.1974,
+        0.1994
       ]
     }
   }

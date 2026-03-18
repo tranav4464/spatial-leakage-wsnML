@@ -365,6 +365,76 @@ def main():
     else:
         print(f"    --> EVEN TEMPORAL PREDICTION FAILS UNDER LOGO")
 
+    # ---- EWMA alpha sensitivity sweep ----
+    print("\n" + "=" * 60)
+    print("EWMA ALPHA SENSITIVITY SWEEP")
+    print("=" * 60)
+
+    alpha_sweep = ewma_alpha_sweep(y, groups, n_groups)
+    output['ewma_alpha_sweep'] = alpha_sweep
+
+    # Re-save with alpha sweep
+    with open(out_path, 'w') as f:
+        json.dump(output, f, indent=2)
+    print(f"\nRe-saved with alpha sweep: {out_path}")
+
+
+def ewma_alpha_sweep(y, groups, n_groups):
+    """Sweep EWMA alpha and report R² under LOGO CV for each."""
+    logo = LeaveOneGroupOut()
+    alphas = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+
+    # We need to recompute EWMA for each alpha on the raw data
+    rows = []
+    with open(DATASET_PATH) as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            rows.append(row)
+    rows.sort(key=lambda r: (r['src_node'], r['dst_node'], int(r['window_idx'])))
+
+    sweep_results = {}
+    for alpha in alphas:
+        # Recompute EWMA predictions for this alpha
+        prev = {}
+        ewma_state = {}
+        records = []
+        for row in rows:
+            link = (row['src_node'], row['dst_node'])
+            prr = float(row[TARGET_COL])
+            if link in prev:
+                prev_prr = prev[link]
+                if link in ewma_state:
+                    ewma_state[link] = alpha * prev_prr + (1 - alpha) * ewma_state[link]
+                else:
+                    ewma_state[link] = prev_prr
+                records.append({
+                    'prr': prr,
+                    'ewma_pred': ewma_state[link],
+                    'dst_node': row[GROUP_COL],
+                })
+            prev[link] = prr
+
+        y_arr = np.array([r['prr'] for r in records])
+        pred_arr = np.array([r['ewma_pred'] for r in records])
+        unique_groups = sorted(set(r['dst_node'] for r in records))
+        group_map = {g: i for i, g in enumerate(unique_groups)}
+        g_arr = np.array([group_map[r['dst_node']] for r in records])
+
+        fold_r2 = []
+        for train_idx, test_idx in logo.split(pred_arr, y_arr, g_arr):
+            r2 = r2_score(y_arr[test_idx], np.clip(pred_arr[test_idx], 0, 1))
+            fold_r2.append(float(r2))
+
+        r2_mean = round(float(np.mean(fold_r2)), 4)
+        r2_std = round(float(np.std(fold_r2)), 4)
+        sweep_results[str(alpha)] = {
+            'r2_mean': r2_mean,
+            'r2_std': r2_std,
+        }
+        print(f"  alpha={alpha:.1f}: R²={r2_mean:.4f} ± {r2_std:.4f}")
+
+    return sweep_results
+
 
 if __name__ == '__main__':
     main()
