@@ -109,6 +109,20 @@ if os.path.exists(bench_path):
     size_key = 'arm_text_bytes' if 'arm_text_bytes' in benchmarks[0] else 'text_size'
     arch_label = "ARM Cortex-M3" if size_key == 'arm_text_bytes' else "x86-64"
 
+    # Define manual offsets for specific models to prevent overlap
+    label_offsets = {
+        'XGBoost_Full': (-30, 10),
+        'ALE_Rule': (5, -15),
+        'Linear_Reg': (-25, 10),
+        'CART_Depth2': (-35, -12),
+        'CART_Depth3': (5, -15),
+        'CART_Depth4': (5, 5),
+        'CART_Depth5': (5, -15),
+        'CART_Depth6': (5, 5),
+        'CART_Depth8': (5, -15),
+        'CART_Depth10': (5, 5)
+    }
+
     for b in benchmarks:
         text_size = b.get(size_key, b.get('text_size', 0))
         if text_size == 0:
@@ -119,8 +133,10 @@ if os.path.exists(bench_path):
                  'o' if 'CART' in b['model'] else '^'
         ax.scatter(text_size, b['r2_mean'], color=color, marker=marker,
                    s=100, zorder=5, edgecolors='black', linewidth=0.5)
+        
+        offset = label_offsets.get(b['model'], (5, 5))
         ax.annotate(b['model'], (text_size, b['r2_mean']),
-                    textcoords="offset points", xytext=(5, 5), fontsize=8)
+                    textcoords="offset points", xytext=offset, fontsize=8)
 
     ax.set_xscale('log')
     ax.set_xlabel(f"Compiled .text Size (bytes, log scale) [{arch_label}]")
@@ -583,14 +599,17 @@ if os.path.exists(lofo_path):
                 if delta < 0:  # Removal improves R²
                     ax.annotate(f'Removal improves\n$R^2$ by {-delta:.3f}',
                                 xy=(i, r2_without[i]),
-                                xytext=(i + 1.2, r2_without[i] + 0.02),
+                                xytext=(i + 1.2, r2_without[i] - 0.05),
                                 fontsize=9, ha='center',
                                 arrowprops=dict(arrowstyle='->', color='#d32f2f', lw=1.5),
                                 color='#d32f2f', fontweight='bold')
 
         # Add value labels on bars
         for i, v in enumerate(r2_without):
-            ax.text(i, v + 0.005, f'{v:.3f}', ha='center', va='bottom', fontsize=8)
+            # Use a white bounding box to prevent the baseline from crossing through the text
+            bbox_props = dict(boxstyle="round,pad=0.15", fc="white", ec="none", alpha=0.85)
+            ax.text(i, v + 0.003, f'{v:.3f}', ha='center', va='bottom', fontsize=9, 
+                    fontweight='bold', zorder=10, bbox=bbox_props)
 
         ax.set_xticks(range(len(feat_names)))
         ax.set_xticklabels([f.replace('_', '\n') for f in feat_names], fontsize=9)
@@ -637,9 +656,13 @@ if os.path.exists(dist_int_path):
                           color='#42A5F5', edgecolor='black', linewidth=0.5, alpha=0.85)
 
             # Annotate leakage delta
+            max_val = -float('inf')
+            min_val = float('inf')
             for i in range(2):
                 delta = naive_vals[i] - logo_vals[i]
-                mid_y = max(naive_vals[i], logo_vals[i]) + 0.05
+                mid_y = max(naive_vals[i], logo_vals[i]) + 0.15
+                max_val = max(max_val, mid_y)
+                min_val = min(min_val, min(naive_vals[i], logo_vals[i]))
                 ax.annotate(f'$\\Delta$ = {delta:.2f}',
                            xy=(x[i], mid_y), fontsize=9, ha='center',
                            fontweight='bold',
@@ -651,6 +674,9 @@ if os.path.exists(dist_int_path):
             ax.set_xticks(x)
             ax.set_xticklabels(categories)
             ax.legend(fontsize=8, loc='lower left')
+            
+            # Add padding to prevent overflow
+            ax.set_ylim(min_val - 0.2, max_val + 0.25)
 
         plt.suptitle('Distance Feature Interaction with Spatial Leakage',
                      fontsize=12, fontweight='bold')

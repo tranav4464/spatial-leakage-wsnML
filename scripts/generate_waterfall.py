@@ -75,7 +75,7 @@ annotations = [
 ]
 
 # ── Plot ──────────────────────────────────────────────────────────
-fig, ax = plt.subplots(figsize=(14, 7))
+fig, ax = plt.subplots(figsize=(16, 8))
 
 bar_width = 0.55
 x = np.arange(len(categories))
@@ -90,7 +90,7 @@ for i in range(len(categories)):
         # Value label above
         ax.text(x[i], height + 0.025, f'+{height:.3f}',
                 ha='center', va='bottom', fontweight='bold',
-                color=colors[i], fontsize=11)
+                color=colors[i], fontsize=14)
 
     elif i == len(categories) - 1:
         # Ending bar: from 0 down to -0.642
@@ -101,7 +101,7 @@ for i in range(len(categories)):
         # Value label below
         ax.text(x[i], bottom - 0.025, f'{bottom:.3f}',
                 ha='center', va='top', fontweight='bold',
-                color=colors[i], fontsize=11)
+                color=colors[i], fontsize=14)
 
     else:
         # Hanging/waterfall bars
@@ -117,7 +117,7 @@ for i in range(len(categories)):
         text_color = 'white' if colors[i] != '#FFC107' else '#333333'
         ax.text(x[i], mid_y, f'−{height:.3f}',
                 ha='center', va='center', fontweight='bold',
-                color=text_color, fontsize=10)
+                color=text_color, fontsize=12)
 
         # Dashed connector from previous bar's bottom to this bar's top
         ax.plot([x[i - 1] + bar_width / 2, x[i] - bar_width / 2],
@@ -129,8 +129,8 @@ for i in range(len(categories)):
         ann_y = (cumulative[i - 1] + cumulative[i]) / 2 if i > 0 and i < len(categories) - 1 else None
         if ann_y is not None:
             ax.annotate(annotations[i],
-                        xy=(x[i] + bar_width / 2 + 0.05, ann_y),
-                        fontsize=7.5, color='#616161', style='italic',
+                        xy=(x[i] + bar_width / 2 + 0.08, ann_y),
+                        fontsize=12, color='#333333', style='italic',
                         va='center', ha='left',
                         annotation_clip=False)
 
@@ -164,9 +164,9 @@ ax.text(bracket_x + 0.12, badge_y - 0.04, 'Δ = 1.44', fontsize=9,
 
 # ── Axes formatting ──────────────────────────────────────────────
 ax.set_xticks(x)
-ax.set_xticklabels(categories, fontsize=10)
-ax.set_ylabel('R² Score', fontsize=13)
-ax.set_title('Sim-to-Real Gap Decomposition: R² Waterfall', fontweight='bold', fontsize=15, pad=15)
+ax.set_xticklabels(categories, fontsize=12)
+ax.set_ylabel('R² Score', fontsize=16)
+ax.set_title('Sim-to-Real Gap Decomposition: R² Waterfall', fontweight='bold', fontsize=18, pad=15)
 
 ax.set_yticks([-0.75, -0.50, -0.25, 0.00, 0.25, 0.50, 0.75, 1.00])
 ax.set_yticklabels([f'{v:+.2f}' for v in [-0.75, -0.50, -0.25, 0.00, 0.25, 0.50, 0.75, 1.00]])
