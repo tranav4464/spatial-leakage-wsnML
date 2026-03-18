@@ -1,0 +1,120 @@
+{
+  "description": "Four-feature simulation ablation: comparison of 8-feature (original) vs 4-feature (testbed-matched: Distance, RSSI, Density, synthetic LQI proxy) simulation R\u00b2 under GroupKFold(5).",
+  "full_features": [
+    "Transmission_Power_dBm",
+    "Distance_to_Sink_m",
+    "Local_Density",
+    "Signal_Strength_RSSI_dBm",
+    "Noise_Level_dBm",
+    "SNR_dB",
+    "Initial_Energy_J",
+    "Residual_Energy_J"
+  ],
+  "matched_features": [
+    "Distance_to_Sink_m",
+    "Signal_Strength_RSSI_dBm",
+    "Local_Density",
+    "LQI_proxy"
+  ],
+  "n_samples": 150000,
+  "results_8feat": {
+    "xgboost": {
+      "r2_mean": 0.7982,
+      "r2_std": 0.0421,
+      "rmse_mean": 0.0172,
+      "per_fold_r2": [
+        0.7217,
+        0.7888,
+        0.8398,
+        0.831,
+        0.8096
+      ]
+    },
+    "cart_d6": {
+      "r2_mean": 0.7671,
+      "r2_std": 0.0545,
+      "rmse_mean": 0.0185,
+      "per_fold_r2": [
+        0.6628,
+        0.7676,
+        0.8149,
+        0.8037,
+        0.7867
+      ]
+    },
+    "cart_d3": {
+      "r2_mean": 0.4767,
+      "r2_std": 0.0789,
+      "rmse_mean": 0.0279,
+      "per_fold_r2": [
+        0.338,
+        0.4605,
+        0.5442,
+        0.5604,
+        0.4802
+      ]
+    },
+    "linreg": {
+      "r2_mean": 0.2191,
+      "r2_std": 0.0284,
+      "rmse_mean": 0.0343,
+      "per_fold_r2": [
+        0.2588,
+        0.2164,
+        0.2262,
+        0.2239,
+        0.1702
+      ]
+    }
+  },
+  "results_4feat": {
+    "xgboost": {
+      "r2_mean": 0.4974,
+      "r2_std": 0.0553,
+      "rmse_mean": 0.0274,
+      "per_fold_r2": [
+        0.397,
+        0.4934,
+        0.5445,
+        0.5521,
+        0.5001
+      ]
+    },
+    "cart_d6": {
+      "r2_mean": 0.4624,
+      "r2_std": 0.052,
+      "rmse_mean": 0.0283,
+      "per_fold_r2": [
+        0.3726,
+        0.4521,
+        0.514,
+        0.5139,
+        0.4595
+      ]
+    },
+    "cart_d3": {
+      "r2_mean": 0.342,
+      "r2_std": 0.0367,
+      "rmse_mean": 0.0314,
+      "per_fold_r2": [
+        0.2899,
+        0.3784,
+        0.3681,
+        0.3682,
+        0.3055
+      ]
+    },
+    "linreg": {
+      "r2_mean": 0.1946,
+      "r2_std": 0.0293,
+      "rmse_mean": 0.0349,
+      "per_fold_r2": [
+        0.2378,
+        0.1962,
+        0.2061,
+        0.1855,
+        0.1476
+      ]
+    }
+  }
+}

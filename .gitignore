@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# Compiled objects
+*.o
+*.arm.o
+*.elf
+
+ # OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Manuscript
+manuscript/
+
+# Large raw data files (regenerable — see README)
+data/raw/*.csv
+data/raw/*.log
+data/raw/*.pcap
+
+# Generated processed datasets (regenerable via pipeline)
+data/processed/testbed_dataset.csv
+data/processed/testbed_dataset_lille.csv
+data/processed/testbed_results.json
+
+# Generated firmware from testbed experiments
+firmware/testbed_cart_depth*/
+results/figures/testbed_pareto_frontier.*
+
+

@@ -1,0 +1,66 @@
+# Centralized experiment configuration
+# All hyperparameters, seeds, and paths in one place
+
+simulation:
+  area_size: 100.0
+  node_counts: [100, 200, 300]
+  tx_powers_dbm: [-25, -15, -10, -5, 0]
+  noise_floors_dbm: [-100, -90, -80]
+  initial_energies_j: [2.0, 5.0, 10.0]
+  sim_duration_s: 300.0
+  time_window_s: 10.0
+  packets_per_window: 30
+  num_deployments: 5
+  random_seed: 42
+
+rf_physics:
+  freq_hz: 2.4e9
+  path_loss_exponent: 3.0
+  shadowing_std_db: 4.0
+  frame_length_bits: 1016  # 127 bytes * 8
+  obstacle_penalty_db: 8.0
+  ber_model: "zuniga_krishnamachari"  # IEEE 802.15.4 O-QPSK/DSSS
+
+mac:
+  model: "p_persistent_csma"
+  mac_min_be: 3
+  mac_max_be: 5
+  mac_max_csma_backoffs: 4
+
+hardware:
+  rx_sensitivity_dbm: -95.0
+  supply_voltage: 3.0
+  transceiver: "CC2420"
+
+training:
+  max_samples: 150000
+  n_folds: 5
+  cv_method: "GroupKFold"
+  random_seed: 42
+
+xgboost:
+  n_estimators: 150
+  max_depth: 6
+  learning_rate: 0.1
+  subsample: 0.8
+  colsample_bytree: 0.8
+
+ale:
+  n_bins: 40
+  subset_size: 10000
+  lut_points: 5
+  snr_transition_zone_db: 3.0
+
+cart_sweep:
+  depths: [2, 3, 4, 5, 6, 8, 10]
+
+xgb_sweep:
+  n_estimators: [5, 10, 25, 50, 75, 100, 150]
+
+knowledge_distillation:
+  alphas: [0.0, 0.25, 0.5, 0.75, 1.0]
+  student_depths: [2, 3, 4, 5, 6, 8]
+
+ablation:
+  cross_seeds: [42, 123, 456, 789, 2024]
+  learning_curve_fractions: [0.1, 0.25, 0.5, 0.75, 1.0]

@@ -1,0 +1,34 @@
+{
+  "description": "Distance memorization interaction: 2x2 experiment testing {with Distance, no Distance} x {naive KFold, LOGO}. If Distance is the leakage vector, leakage delta should collapse when Distance is removed.",
+  "full_features": [
+    "Distance_m",
+    "RSSI_mean",
+    "LQI_mean",
+    "Local_Density"
+  ],
+  "no_distance_features": [
+    "RSSI_mean",
+    "LQI_mean",
+    "Local_Density"
+  ],
+  "results": {
+    "xgboost": {
+      "naive_full": 0.3626,
+      "naive_nodist": 0.2639,
+      "logo_full": -0.6417,
+      "logo_nodist": -0.6092,
+      "leakage_with_distance": 1.0043,
+      "leakage_without_distance": 0.8731,
+      "leakage_reduction": 0.1312
+    },
+    "cart_d6": {
+      "naive_full": 0.1813,
+      "naive_nodist": 0.1591,
+      "logo_full": -1.1473,
+      "logo_nodist": -1.4748,
+      "leakage_with_distance": 1.3286,
+      "leakage_without_distance": 1.6338,
+      "leakage_reduction": -0.3052
+    }
+  }
+}
